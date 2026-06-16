@@ -2,6 +2,10 @@
 
 A comprehensive, production-ready full-stack application designed specifically for AI research teams. It centralizes project management, experiment tracking, document versioning, and journal club scheduling into a single, beautiful, and secure platform.
 
+## 🌐 Live Deployment
+- **Frontend (Vercel)**: [https://lab-workspace.vercel.app](https://lab-workspace.vercel.app) *(Update with your exact Vercel URL)*
+- **Backend (Render)**: [https://lab-workspace-backend.onrender.com/docs](https://lab-workspace-backend.onrender.com/docs) *(Update with your exact Render URL)*
+
 ## 🚀 Features
 
 ### 📁 Project Management
@@ -102,3 +106,22 @@ A comprehensive, production-ready full-stack application designed specifically f
 
 ## 🎨 Design Philosophy
 The UI was built from scratch without relying on heavy component libraries. It emphasizes a premium aesthetic with subtle micro-animations, glassmorphism, dynamic layouts, and full light/dark mode support to create an inspiring workspace for researchers.
+
+## 🚀 Deployment Guide
+
+This project is built to be easily deployed using modern PaaS providers.
+
+### 1. Database (Neon / Supabase)
+Set up a free serverless PostgreSQL database and obtain your connection string (e.g., `postgresql://user:password@endpoint/dbname?sslmode=require`).
+
+### 2. Backend (Render)
+A `render.yaml` blueprint is included in the root directory for automated Infrastructure-as-Code deployment.
+1. Connect your repository to Render via **Blueprint**.
+2. Input your `DATABASE_URL` environment variable.
+3. Deploy the service and obtain your backend URL.
+
+### 3. Frontend (Vercel)
+1. Import the repository into Vercel.
+2. **Crucial Step**: Set the **Root Directory** to `frontend` before deploying.
+3. Add the `NEXT_PUBLIC_API_URL` environment variable pointing to your Render backend URL (e.g., `https://your-backend.onrender.com/api/v1`).
+4. Add your newly generated Vercel domain to the `FRONTEND_URL` environment variable in Render to properly configure CORS.
