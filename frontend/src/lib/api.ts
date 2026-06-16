@@ -1,7 +1,10 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { Token } from "@/types";
 
-const API_URL = "http://127.0.0.1:8000/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL 
+  || (typeof window !== "undefined" 
+    ? `${window.location.protocol}//${window.location.hostname}:8000/api/v1` 
+    : "http://127.0.0.1:8000/api/v1");
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -27,6 +30,10 @@ api.interceptors.response.use(
       localStorage.removeItem("access_token");
       localStorage.removeItem("user");
       window.location.href = "/login";
+    }
+    if (error.response?.status === 403 && typeof window !== "undefined") {
+      // We don't redirect on 403, just let the UI handle it with a toast
+      console.warn("403 Forbidden:", error.response.data);
     }
     return Promise.reject(error);
   }
@@ -133,4 +140,6 @@ export const journalClubsApi = {
 export const usersApi = {
   list: () => api.get("/users"),
   get: (id: number) => api.get(`/users/${id}`),
+  update: (id: number, data: Record<string, unknown>) => api.patch(`/users/${id}`, data),
+  delete: (id: number) => api.delete(`/users/${id}`),
 };

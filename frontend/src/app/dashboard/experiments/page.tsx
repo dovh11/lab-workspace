@@ -209,6 +209,11 @@ export default function ExperimentsPage() {
                     </div>
                     <StatusBadge status={exp.status || "running"} />
                   </div>
+                  {exp.project_title && (
+                    <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1.5">
+                      {exp.project_title}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     {exp.framework && <span className="text-xs text-purple-500 font-mono">{exp.framework}</span>}
                     <p className="text-xs text-muted-foreground">{formatRelative(exp.created_at)}</p>

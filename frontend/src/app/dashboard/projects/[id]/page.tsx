@@ -11,10 +11,12 @@ import { projectsApi, usersApi, experimentsApi, documentsApi } from "@/lib/api";
 import { Project, User, AIExperiment, Document } from "@/types";
 import { formatDate, getStatusColor, getRoleColor, getErrorMessage } from "@/lib/utils";
 import { toastError, toastSuccess } from "@/components/ui/Toaster";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const projectId = Number(id);
+  const { user } = useAuth();
 
   const [project, setProject] = useState<Project | null>(null);
   const [experiments, setExperiments] = useState<AIExperiment[]>([]);
@@ -78,6 +80,11 @@ export default function ProjectDetailPage() {
 
   const memberUserIds = new Set(project.members.map((m) => m.user_id));
   const nonMembers = users.filter((u) => !memberUserIds.has(u.user_id));
+
+  const myRole = project.members.find(m => m.user_id === user?.user_id)?.role_in_project;
+  const isManager = user?.system_role === "Manager";
+  const canEdit = isManager || myRole === "Lead";
+  const canContribute = canEdit || myRole === "Contributor";
 
   const tabs = [
     { key: "overview",    label: "Overview",                    icon: FolderKanban },
@@ -177,13 +184,15 @@ export default function ProjectDetailPage() {
                       <span className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getRoleColor(member.role_in_project)}`}>
                         <Shield size={10} /> {member.role_in_project}
                       </span>
-                      <button
-                        onClick={() => handleRemoveMember(member.user_id)}
-                        className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="Remove member"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleRemoveMember(member.user_id)}
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Remove member"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -195,7 +204,7 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* Add member */}
-              {nonMembers.length > 0 && (
+              {canEdit && nonMembers.length > 0 && (
                 <div className="pt-5 border-t border-border">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Add Member</h4>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -263,12 +272,14 @@ export default function ProjectDetailPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-foreground">Active Experiments</h3>
-              <Link 
-                href={`/dashboard/experiments?project_id=${projectId}`} 
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors rounded-md bg-primary hover:opacity-90"
-              >
-                <Plus size={14} /> Log Experiment
-              </Link>
+              {canContribute && (
+                <Link 
+                  href={`/dashboard/experiments?project_id=${projectId}`} 
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors rounded-md bg-primary hover:opacity-90"
+                >
+                  <Plus size={14} /> Log Experiment
+                </Link>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -302,12 +313,14 @@ export default function ProjectDetailPage() {
               <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed rounded-xl bg-card border-border">
                 <FlaskConical size={48} className="text-muted-foreground mb-4 opacity-50" />
                 <p className="text-muted-foreground mb-4 font-medium">No experiments tracked yet</p>
-                <Link 
-                  href={`/dashboard/experiments?project_id=${projectId}`} 
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90"
-                >
-                  <Plus size={16} /> Log first experiment
-                </Link>
+                {canContribute && (
+                  <Link 
+                    href={`/dashboard/experiments?project_id=${projectId}`} 
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90"
+                  >
+                    <Plus size={16} /> Log first experiment
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -318,19 +331,25 @@ export default function ProjectDetailPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-foreground">Project Documents</h3>
-              <Link 
-                href={`/dashboard/documents?project_id=${projectId}`} 
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors rounded-md bg-primary hover:opacity-90"
-              >
-                <Plus size={14} /> Add Document
-              </Link>
+              {canContribute && (
+                <Link 
+                  href={`/dashboard/documents?project_id=${projectId}`} 
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors rounded-md bg-primary hover:opacity-90"
+                >
+                  <Plus size={14} /> Add Document
+                </Link>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {documents.map((doc) => (
-                <div key={doc.document_id} className="flex items-center justify-between p-4 border rounded-xl bg-card border-border">
+                <Link 
+                  key={doc.document_id} 
+                  href={`/dashboard/documents/${doc.document_id}`}
+                  className="flex items-center justify-between p-4 border rounded-xl bg-card border-border hover:border-primary/50 hover:shadow-md transition-all group"
+                >
                   <div className="min-w-0">
-                    <h4 className="font-bold text-foreground text-sm truncate mb-1">{doc.title}</h4>
+                    <h4 className="font-bold text-foreground text-sm truncate mb-1 group-hover:text-primary transition-colors">{doc.title}</h4>
                     <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                       <span>v{doc.latest_version?.version_number || 0}</span>
                       <span>&bull;</span>
@@ -340,7 +359,7 @@ export default function ProjectDetailPage() {
                   <span className="shrink-0 ml-4 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-muted text-foreground border-border">
                     {doc.doc_type}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -348,12 +367,14 @@ export default function ProjectDetailPage() {
               <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed rounded-xl bg-card border-border">
                 <FileText size={48} className="text-muted-foreground mb-4 opacity-50" />
                 <p className="text-muted-foreground mb-4 font-medium">No documents uploaded yet</p>
-                <Link 
-                  href={`/dashboard/documents?project_id=${projectId}`} 
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90"
-                >
-                  <Plus size={16} /> Add first document
-                </Link>
+                {canContribute && (
+                  <Link 
+                    href={`/dashboard/documents?project_id=${projectId}`} 
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90"
+                  >
+                    <Plus size={16} /> Add first document
+                  </Link>
+                )}
               </div>
             )}
           </div>

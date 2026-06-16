@@ -1,86 +1,104 @@
 # Lab Workspace & Research Progress Management System
 
-A full-stack system for AI research teams to manage documents, track experiments, and schedule journal clubs.
+A comprehensive, production-ready full-stack application designed specifically for AI research teams. It centralizes project management, experiment tracking, document versioning, and journal club scheduling into a single, beautiful, and secure platform.
 
-## Project Structure
+## 🚀 Features
 
-```
-lab-workspace/
-├── backend/                    # FastAPI Python backend
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── deps.py         # Auth dependencies
-│   │   │   └── v1/
-│   │   │       ├── router.py   # Central API router
-│   │   │       └── endpoints/  # Route handlers
-│   │   ├── core/
-│   │   │   ├── config.py       # Settings & env vars
-│   │   │   └── security.py     # JWT & password utils
-│   │   ├── db/
-│   │   │   ├── base.py         # Model aggregator (for Alembic)
-│   │   │   └── session.py      # SQLAlchemy engine + session
-│   │   ├── models/             # SQLAlchemy ORM models
-│   │   ├── schemas/            # Pydantic request/response schemas
-│   │   ├── services/           # Business logic layer
-│   │   └── main.py             # FastAPI app factory
-│   ├── migrations/             # Alembic migration scripts
-│   ├── uploads/                # File upload storage
-│   ├── alembic.ini
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/                   # Next.js 14 App Router frontend
-│   └── src/
-│       ├── app/                # Page routes (App Router)
-│       ├── components/         # Reusable UI components
-│       ├── lib/                # API client, utils
-│       └── types/              # TypeScript type definitions
-└── docker-compose.yml          # PostgreSQL + backend container
-```
+### 📁 Project Management
+- Create and manage research projects with active/archived statuses.
+- Invite members to your projects with granular Role-Based Access Control (Lead, Contributor, Reviewer).
+- Keep all related experiments and documents organized within project boundaries.
 
-## Quick Start
+### 🧪 Experiment Tracking
+- Log AI experiment runs across any framework (PyTorch, TensorFlow, JAX).
+- Dynamically log hyperparameters and metrics on a per-epoch basis.
+- Visualize training curves (Loss, Validation Loss, Accuracy) with interactive interactive charts right in the browser.
+
+### 📄 Document Version Control
+- Git-style versioning for your research papers (LaTeX, Word), datasets, and scripts.
+- Drag-and-drop support for uploading new versions of documents.
+- Keep track of authorship and download any previous commit easily.
+
+### 📚 Journal Club Scheduler
+- Schedule upcoming paper discussion sessions with full abstract and PDF linking.
+- RSVP system for attendees (Attending, Maybe, Declined) to track participation.
+
+### 🔐 Advanced Role-Based Access Control & User Management
+- **System Roles**: Manager, Researcher, and Intern.
+- **Project Roles**: Lead, Contributor, Reviewer.
+- Fully secure backend routing that guarantees users can only modify resources they have access to.
+- **Self-Service Settings**: Users can freely update their profiles or permanently delete their accounts.
+- **Admin Panel**: Managers have full control to view, edit, and delete any system user or change their roles.
+
+## 🛠 Tech Stack
+
+**Frontend:**
+- **Next.js 14** (App Router)
+- **React 18**
+- **TypeScript**
+- **Tailwind CSS** (with custom glassmorphism and modern UI tokens)
+- **Recharts** (for data visualization)
+- **Lucide React** (for iconography)
+
+**Backend:**
+- **FastAPI** (Python 3.10+)
+- **PostgreSQL**
+- **SQLAlchemy** (ORM with eager loading optimizations)
+- **Pydantic V2** (for rigorous schema validation)
+- **PyJWT** & **Passlib** (for secure, stateless Authentication)
+
+## 📦 Getting Started
 
 ### Prerequisites
-- Python 3.11+
 - Node.js 18+
-- PostgreSQL 14+ (or use Docker)
+- Python 3.10+
+- PostgreSQL Server
 
-### 1. Start Database (Docker)
-```bash
-docker-compose up -d postgres
-```
+### Backend Setup
 
-### 2. Backend Setup
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your database credentials
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create a virtual environment and activate it:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Set up your `.env` file (or use the defaults in `config.py`):
+   ```env
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/lab_workspace
+   SECRET_KEY=your_super_secret_key
+   ```
+5. Run the server:
+   ```bash
+   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+   ```
 
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
+### Frontend Setup
 
-alembic upgrade head
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser to `http://localhost:3000`.
 
-### 3. Frontend Setup
-```bash
-cd frontend
-cp .env.local.example .env.local
-# Edit .env.local with your API URL
+## 🔒 Security
+- Passwords are securely hashed using bcrypt.
+- Session state is managed purely via JWTs.
+- SQLAlchemy cascades and SET NULL constraints handle referential integrity when users or projects are deleted.
 
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## API Documentation
-Once the backend is running, visit [http://localhost:8000/docs](http://localhost:8000/docs) for interactive Swagger UI.
-
-## Tech Stack
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
-- **Backend**: FastAPI, SQLAlchemy, Alembic, Pydantic v2
-- **Database**: PostgreSQL 16
-- **Auth**: JWT (python-jose) + bcrypt
-- **Container**: Docker + Docker Compose
+## 🎨 Design Philosophy
+The UI was built from scratch without relying on heavy component libraries. It emphasizes a premium aesthetic with subtle micro-animations, glassmorphism, dynamic layouts, and full light/dark mode support to create an inspiring workspace for researchers.

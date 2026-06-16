@@ -11,20 +11,35 @@ import { experimentsApi } from "@/lib/api";
 import { AIExperiment } from "@/types";
 import { formatDateTime, getStatusColor, getErrorMessage } from "@/lib/utils";
 import { toastError, toastSuccess } from "@/components/ui/Toaster";
+import { useAuth } from "@/contexts/AuthContext";
+import { projectsApi } from "@/lib/api";
 
 export default function ExperimentDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [exp, setExp] = useState<AIExperiment | null>(null);
+  const [myRole, setMyRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [appendEntry, setAppendEntry] = useState("");
   const [appending, setAppending] = useState(false);
 
   useEffect(() => {
-    experimentsApi.get(Number(id))
-      .then((res) => setExp(res.data))
-      .catch((err) => toastError(getErrorMessage(err)))
-      .finally(() => setIsLoading(false));
-  }, [id]);
+    (async () => {
+      try {
+        const res = await experimentsApi.get(Number(id));
+        setExp(res.data);
+        if (res.data.project_id && user) {
+          const projRes = await projectsApi.get(res.data.project_id);
+          const role = projRes.data.members.find((m: any) => m.user_id === user.user_id)?.role_in_project;
+          setMyRole(role || null);
+        }
+      } catch (err) {
+        toastError(getErrorMessage(err));
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [id, user]);
 
   const handleAppend = async () => {
     if (!appendEntry.trim() || !exp) return;
@@ -60,6 +75,9 @@ export default function ExperimentDetailPage() {
     : [];
 
   const colors = ["#ef4444", "#6366f1", "#10b981", "#f59e0b", "#3b82f6", "#ec4899"];
+
+  const isManager = user?.system_role === "Manager";
+  const canContribute = isManager || myRole === "Lead" || myRole === "Contributor";
 
   return (
     <div className="space-y-6">
@@ -130,24 +148,31 @@ export default function ExperimentDetailPage() {
         </div>
 
         {/* Append Metrics */}
-        <div className="p-5 border rounded-xl bg-card border-border shadow-sm flex flex-col">
-          <h3 className="font-bold text-foreground mb-4 text-sm uppercase tracking-wider">Append Metrics Entry</h3>
-          <textarea
-            className="flex-1 w-full p-3 text-xs font-mono rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none mb-3"
-            rows={4}
-            value={appendEntry}
-            onChange={(e) => setAppendEntry(e.target.value)}
-            placeholder={'{"epoch": 1, "loss": 0.5, "accuracy": 0.82}'}
-          />
-          <button 
-            onClick={handleAppend} 
-            disabled={appending || !appendEntry.trim()} 
-            className="flex items-center justify-center gap-2 px-4 py-2 mt-auto text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90 disabled:opacity-50 w-full"
-          >
-            {appending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-            Append Metrics
-          </button>
-        </div>
+        {canContribute ? (
+          <div className="p-5 border rounded-xl bg-card border-border shadow-sm flex flex-col">
+            <h3 className="font-bold text-foreground mb-4 text-sm uppercase tracking-wider">Append Metrics Entry</h3>
+            <textarea
+              className="flex-1 w-full p-3 text-xs font-mono rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none mb-3"
+              rows={4}
+              value={appendEntry}
+              onChange={(e) => setAppendEntry(e.target.value)}
+              placeholder={'{"epoch": 1, "loss": 0.5, "accuracy": 0.82}'}
+            />
+            <button 
+              onClick={handleAppend} 
+              disabled={appending || !appendEntry.trim()} 
+              className="flex items-center justify-center gap-2 px-4 py-2 mt-auto text-sm font-semibold text-primary-foreground transition-colors rounded-lg bg-primary hover:opacity-90 disabled:opacity-50 w-full"
+            >
+              {appending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+              Append Metrics
+            </button>
+          </div>
+        ) : (
+          <div className="p-5 border rounded-xl bg-card border-border shadow-sm flex flex-col items-center justify-center text-center opacity-70">
+            <h3 className="font-bold text-muted-foreground mb-2 text-sm uppercase tracking-wider">Read Only</h3>
+            <p className="text-xs text-muted-foreground">You do not have permission to append metrics to this experiment.</p>
+          </div>
+        )}
       </div>
 
       {/* Chart */}

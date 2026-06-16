@@ -25,6 +25,8 @@ const navItems = [
   { href: "/dashboard/journal-clubs", label: "Journal Clubs", icon: BookOpen },
 ];
 
+import { Settings, Shield } from "lucide-react";
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
@@ -78,6 +80,36 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        <div className="px-2 mt-6 mb-4 text-xs font-semibold tracking-wider uppercase text-muted-foreground">
+          System
+        </div>
+        
+        <Link
+          href="/dashboard/settings"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname.startsWith("/dashboard/settings")
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <Settings size={18} />
+          Settings
+        </Link>
+
+        {user?.system_role === "Manager" && (
+          <Link
+            href="/dashboard/users"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              pathname.startsWith("/dashboard/users")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <Shield size={18} />
+            User Management
+          </Link>
+        )}
       </nav>
 
       {/* Bottom Area: Theme Toggle & User Info */}

@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_db, get_current_active_user
-from app.models.user import User
+from app.api.permissions import require_system_roles
+from app.models.user import User, SystemRole
 from app.models.journal_club import JournalClub, JournalClubAttendee
 from app.schemas.journal_club import (
     JournalClubCreate, JournalClubUpdate, JournalClubRead, RSVPUpdate,
@@ -39,6 +40,8 @@ def create_journal_club(
     current_user: User = Depends(get_current_active_user),
 ):
     """Create a new journal club meeting."""
+    require_system_roles(current_user, [SystemRole.MANAGER, SystemRole.RESEARCHER])
+
     club = JournalClub(
         title=club_in.title,
         topic=club_in.topic,
@@ -83,6 +86,8 @@ def update_journal_club(
     current_user: User = Depends(get_current_active_user),
 ):
     """Update a journal club meeting."""
+    require_system_roles(current_user, [SystemRole.MANAGER, SystemRole.RESEARCHER])
+
     club = db.query(JournalClub).filter(JournalClub.club_id == club_id).first()
     if not club:
         raise HTTPException(status_code=404, detail="Journal club not found")
@@ -102,6 +107,8 @@ def delete_journal_club(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
+    require_system_roles(current_user, [SystemRole.MANAGER, SystemRole.RESEARCHER])
+
     club = db.query(JournalClub).filter(JournalClub.club_id == club_id).first()
     if not club:
         raise HTTPException(status_code=404, detail="Journal club not found")

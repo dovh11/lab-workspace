@@ -79,6 +79,7 @@ export interface Document {
   updated_at: string | null;
   latest_version: DocumentVersion | null;
   version_count: number;
+  project_title?: string;
 }
 
 export interface MetricsEntry {
@@ -105,6 +106,7 @@ export interface AIExperiment {
   creator: UserPublic | null;
   created_at: string;
   updated_at: string | null;
+  project_title?: string;
 }
 
 export interface JournalClubAttendee {

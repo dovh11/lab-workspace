@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: lab-workspace-backend
+    env: docker
+    region: ohio
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+      - key: PORT
+        value: "8000"

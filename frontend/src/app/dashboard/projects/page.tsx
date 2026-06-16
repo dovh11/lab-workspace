@@ -11,6 +11,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 const schema = z.object({
   title: z.string().min(1, "Title required"),
@@ -44,6 +45,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function ProjectsPage() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -123,12 +125,14 @@ export default function ProjectsPage() {
             {projects.length} total · {statusCounts["Active"] || 0} active
           </p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-primary hover:opacity-90"
-        >
-          <Plus size={16} /> New Project
-        </button>
+        {user?.system_role !== "Intern" && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-primary hover:opacity-90"
+          >
+            <Plus size={16} /> New Project
+          </button>
+        )}
       </div>
 
       {/* Filters & Search */}
@@ -185,12 +189,14 @@ export default function ProjectsPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed rounded-xl bg-card border-border">
           <FolderKanban size={48} className="text-muted-foreground mb-4 opacity-50" />
           <p className="text-muted-foreground mb-4">No projects found</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-primary hover:opacity-90"
-          >
-            <Plus size={16} /> Create first project
-          </button>
+          {user?.system_role !== "Intern" && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-primary hover:opacity-90"
+            >
+              <Plus size={16} /> Create first project
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

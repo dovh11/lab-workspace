@@ -44,6 +44,7 @@ class DocumentRead(BaseModel):
     updated_at: Optional[datetime]
     latest_version: Optional[VersionRead] = None
     version_count: int = 0
+    project_title: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

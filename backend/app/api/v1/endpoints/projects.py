@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_db, get_current_active_user
-from app.models.user import User
+from app.api.permissions import require_system_roles, require_project_access
+from app.models.user import User, SystemRole
 from app.models.project import Project, ProjectMember
 from app.schemas.project import (
     ProjectCreate, ProjectUpdate, ProjectRead, ProjectListItem,
@@ -48,6 +49,8 @@ def create_project(
     current_user: User = Depends(get_current_active_user),
 ):
     """Create a new project and automatically add the creator as Lead."""
+    require_system_roles(current_user, [SystemRole.MANAGER, SystemRole.RESEARCHER])
+
     project = Project(
         title=project_in.title,
         description=project_in.description,
@@ -98,6 +101,8 @@ def update_project(
     current_user: User = Depends(get_current_active_user),
 ):
     """Update project details."""
+    require_project_access(db, current_user, project_id, ["Lead"])
+
     project = db.query(Project).filter(Project.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -118,6 +123,8 @@ def delete_project(
     current_user: User = Depends(get_current_active_user),
 ):
     """Delete a project."""
+    require_project_access(db, current_user, project_id, ["Lead"])
+
     project = db.query(Project).filter(Project.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -148,6 +155,8 @@ def add_member(
     current_user: User = Depends(get_current_active_user),
 ):
     """Add a member to a project."""
+    require_project_access(db, current_user, project_id, ["Lead"])
+
     project = db.query(Project).filter(Project.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -184,6 +193,10 @@ def remove_member(
     current_user: User = Depends(get_current_active_user),
 ):
     """Remove a member from a project."""
+    # Allow a user to remove themselves OR a Lead to remove someone
+    if current_user.user_id != user_id:
+        require_project_access(db, current_user, project_id, ["Lead"])
+
     member = db.query(ProjectMember).filter(
         ProjectMember.project_id == project_id,
         ProjectMember.user_id == user_id,

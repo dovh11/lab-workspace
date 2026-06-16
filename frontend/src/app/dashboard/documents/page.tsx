@@ -185,6 +185,11 @@ export default function DocumentsPage() {
                       {doc.doc_type}
                     </span>
                   </div>
+                  {doc.project_title && (
+                    <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1.5">
+                      {doc.project_title}
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
                     <span className="flex items-center gap-1.5 text-sky-500">
                       <GitBranch size={12} />

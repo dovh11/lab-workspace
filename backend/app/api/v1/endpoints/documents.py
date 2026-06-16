@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_db, get_current_active_user
+from app.api.permissions import require_project_access
 from app.core.config import settings
-from app.models.user import User
+from app.models.user import User, SystemRole
 from app.models.document import Document, DocumentVersion
 from app.schemas.document import DocumentCreate, DocumentUpdate, DocumentRead, VersionRead
 
@@ -24,6 +25,7 @@ def list_documents(
     """List documents, optionally filtered by project."""
     query = db.query(Document).options(
         joinedload(Document.creator),
+        joinedload(Document.project),
         joinedload(Document.versions).joinedload(DocumentVersion.uploader),
     )
     if project_id:
@@ -45,6 +47,7 @@ def list_documents(
             updated_at=doc.updated_at,
             latest_version=versions_sorted[0] if versions_sorted else None,
             version_count=len(doc.versions),
+            project_title=doc.project.title if doc.project else None,
         )
         result.append(item)
     return result
@@ -57,6 +60,8 @@ def create_document(
     current_user: User = Depends(get_current_active_user),
 ):
     """Create a document record (without uploading a file yet)."""
+    require_project_access(db, current_user, doc_in.project_id, ["Lead", "Contributor"])
+
     document = Document(
         project_id=doc_in.project_id,
         title=doc_in.title,
@@ -90,6 +95,7 @@ def get_document(
 ):
     doc = db.query(Document).options(
         joinedload(Document.creator),
+        joinedload(Document.project),
         joinedload(Document.versions).joinedload(DocumentVersion.uploader),
     ).filter(Document.document_id == document_id).first()
     if not doc:
@@ -108,6 +114,7 @@ def get_document(
         updated_at=doc.updated_at,
         latest_version=versions_sorted[0] if versions_sorted else None,
         version_count=len(doc.versions),
+        project_title=doc.project.title if doc.project else None,
     )
 
 
@@ -121,6 +128,9 @@ def update_document(
     doc = db.query(Document).filter(Document.document_id == document_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
+
+    if current_user.user_id != doc.created_by:
+        require_project_access(db, current_user, doc.project_id, ["Lead"])
 
     update_data = doc_in.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -140,6 +150,10 @@ def delete_document(
     doc = db.query(Document).filter(Document.document_id == document_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
+
+    if current_user.user_id != doc.created_by:
+        require_project_access(db, current_user, doc.project_id, ["Lead"])
+
     db.delete(doc)
     db.commit()
 
@@ -179,6 +193,8 @@ async def upload_version(
     doc = db.query(Document).filter(Document.document_id == document_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
+
+    require_project_access(db, current_user, doc.project_id, ["Lead", "Contributor"])
 
     # Determine next version number
     latest = (

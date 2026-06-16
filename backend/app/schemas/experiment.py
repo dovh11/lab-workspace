@@ -42,5 +42,6 @@ class ExperimentRead(BaseModel):
     creator: Optional[UserPublic]
     created_at: datetime
     updated_at: Optional[datetime]
+    project_title: Optional[str] = None
 
     model_config = {"from_attributes": True}
