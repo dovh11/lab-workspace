@@ -58,10 +58,17 @@ A comprehensive, production-ready full-stack application designed specifically f
 - **Node.js 18+** (For the frontend)
 - **Git**
 
-### 🛑 Step 1: Start Docker Desktop
+### 📥 Step 1: Clone the Repository
+Download the code to your local machine and open it in your preferred IDE (e.g., VS Code, Cursor):
+```bash
+git clone https://github.com/dovh11/lab-workspace.git
+cd lab-workspace
+```
+
+### 🛑 Step 2: Start Docker Desktop
 Before running any commands, ensure that **Docker Desktop** is open and running in the background on your machine. You should see the Docker icon in your system tray indicating that the Docker Engine is active.
 
-### ⚙️ Step 2: Run the Backend & Database (via Docker)
+### ⚙️ Step 3: Run the Backend & Database (via Docker)
 We use Docker Compose to instantly spin up both the PostgreSQL database and the Python FastAPI backend server without needing to install Python locally.
 
 1. Open your terminal in the root directory of this project.
@@ -73,7 +80,7 @@ We use Docker Compose to instantly spin up both the PostgreSQL database and the 
 
 *(Note: To stop the backend and database, simply run `docker compose down`)*
 
-### 🎨 Step 3: Run the Frontend
+### 🎨 Step 4: Run the Frontend
 1. Open a new terminal window and navigate to the frontend directory:
    ```bash
    cd frontend
@@ -96,21 +103,4 @@ We use Docker Compose to instantly spin up both the PostgreSQL database and the 
 ## 🎨 Design Philosophy
 The UI was built from scratch without relying on heavy component libraries. It emphasizes a premium aesthetic with subtle micro-animations, glassmorphism, dynamic layouts, and full light/dark mode support to create an inspiring workspace for researchers.
 
-## 🚀 Deployment Guide
 
-This project is built to be easily deployed using modern PaaS providers.
-
-### 1. Database (Neon / Supabase)
-Set up a free serverless PostgreSQL database and obtain your connection string (e.g., `postgresql://user:password@endpoint/dbname?sslmode=require`).
-
-### 2. Backend (Render)
-A `render.yaml` blueprint is included in the root directory for automated Infrastructure-as-Code deployment.
-1. Connect your repository to Render via **Blueprint**.
-2. Input your `DATABASE_URL` environment variable.
-3. Deploy the service and obtain your backend URL.
-
-### 3. Frontend (Vercel)
-1. Import the repository into Vercel.
-2. **Crucial Step**: Set the **Root Directory** to `frontend` before deploying.
-3. Add the `NEXT_PUBLIC_API_URL` environment variable pointing to your Render backend URL (e.g., `https://your-backend.onrender.com/api/v1`).
-4. Add your newly generated Vercel domain to the `FRONTEND_URL` environment variable in Render to properly configure CORS.
