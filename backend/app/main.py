@@ -46,6 +46,21 @@ def root():
     }
 
 
+@app.get("/version", tags=["Health"])
+def version():
+    """Returns the deployed code version. Used to verify Render is running the latest commit."""
+    import subprocess
+    try:
+        commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+    except Exception:
+        commit = "unknown"
+    return {
+        "git_commit": commit,
+        "bcrypt_fix": "sha256_prehash_v4",
+        "cors_fix": "origin_regex_v1",
+    }
+
+
 @app.get("/health", tags=["Health"])
 def health_check():
     return {"status": "healthy", "environment": settings.ENVIRONMENT}
