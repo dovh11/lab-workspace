@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Cache-buster: increment this to force Render to do a full rebuild
+ARG CACHE_BUST=3
+
 WORKDIR /app
 
 # System deps for psycopg2
