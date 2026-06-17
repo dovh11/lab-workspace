@@ -3,8 +3,8 @@
 A comprehensive, production-ready full-stack application designed specifically for AI research teams. It centralizes project management, experiment tracking, document versioning, and journal club scheduling into a single, beautiful, and secure platform.
 
 ## 🌐 Live Deployment
-- **Frontend (Vercel)**: [https://lab-workspace.vercel.app](https://lab-workspace.vercel.app) *(Update with your exact Vercel URL)*
-- **Backend (Render)**: [https://lab-workspace-backend.onrender.com/docs](https://lab-workspace-backend.onrender.com/docs) *(Update with your exact Render URL)*
+- **Frontend (Vercel)**: [https://lab-workspace.vercel.app](https://lab-workspace.vercel.app)
+- **Backend (Render)**: [https://lab-workspace-backend.onrender.com/docs](https://lab-workspace-backend.onrender.com/docs)
 
 ## 🚀 Features
 
