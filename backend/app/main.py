@@ -18,9 +18,12 @@ app = FastAPI(
 )
 
 # CORS Middleware
+# allow_origin_regex covers all Vercel preview deployment URLs (e.g. lab-workspace-xxxx-lab-workspace.vercel.app)
+# allow_origins covers localhost dev and any explicit production URLs from settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"https://lab-workspace.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
