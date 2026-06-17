@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+import traceback
 import os
 
 from app.core.config import settings
@@ -44,3 +46,23 @@ def root():
 @app.get("/health", tags=["Health"])
 def health_check():
     return {"status": "healthy", "environment": settings.ENVIRONMENT}
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_msg = f"{type(exc).__name__}: {str(exc)}"
+    print(f"Global Exception: {error_msg}")
+    traceback.print_exc()
+    
+    # Manually attach CORS headers to the 500 response to prevent CORS masking the true error
+    headers = {
+        "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Headers": "*",
+    }
+    
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error_message": error_msg},
+        headers=headers
+    )
