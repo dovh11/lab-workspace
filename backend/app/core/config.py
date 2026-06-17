@@ -25,7 +25,13 @@ class Settings(BaseSettings):
     def cors_origins(self) -> List[str]:
         origins = [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
         if self.FRONTEND_URL:
-            origins.append(self.FRONTEND_URL)
+            for url in self.FRONTEND_URL.split(","):
+                clean_url = url.strip().rstrip("/")
+                if clean_url:
+                    origins.append(clean_url)
+        # Also allow wildcard for safety in demo if nothing matches, though Starlette requires specific origins if credentials=True.
+        # We will just append common Vercel patterns just in case.
+        origins.append("https://lab-workspace.vercel.app")
         return origins
 
     # Upload
