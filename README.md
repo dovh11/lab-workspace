@@ -51,53 +51,42 @@ A comprehensive, production-ready full-stack application designed specifically f
 - **Pydantic V2** (for rigorous schema validation)
 - **PyJWT** & **Passlib** (for secure, stateless Authentication)
 
-## 📦 Getting Started
+## 📦 Getting Started (Local Development)
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.10+
-- PostgreSQL Server
+- **Docker Desktop** (Must be installed and running before starting!)
+- **Node.js 18+** (For the frontend)
+- **Git**
 
-### Backend Setup
+### 🛑 Step 1: Start Docker Desktop
+Before running any commands, ensure that **Docker Desktop** is open and running in the background on your machine. You should see the Docker icon in your system tray indicating that the Docker Engine is active.
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create a virtual environment and activate it:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Set up your `.env` file (or use the defaults in `config.py`):
-   ```env
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/lab_workspace
-   SECRET_KEY=your_super_secret_key
-   ```
-5. Run the server:
-   ```bash
-   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-   ```
+### ⚙️ Step 2: Run the Backend & Database (via Docker)
+We use Docker Compose to instantly spin up both the PostgreSQL database and the Python FastAPI backend server without needing to install Python locally.
 
-### Frontend Setup
+1. Open your terminal in the root directory of this project.
+2. Run the following command to build and start the database and backend in the background:
+   ```bash
+   docker compose up -d --build
+   ```
+3. The backend API is now running at `http://localhost:8000`. You can view the API documentation by visiting [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
 
-1. Navigate to the frontend directory:
+*(Note: To stop the backend and database, simply run `docker compose down`)*
+
+### 🎨 Step 3: Run the Frontend
+1. Open a new terminal window and navigate to the frontend directory:
    ```bash
    cd frontend
    ```
-2. Install dependencies:
+2. Install the necessary Node.js dependencies:
    ```bash
    npm install
    ```
-3. Run the development server:
+3. Start the Next.js development server:
    ```bash
    npm run dev
    ```
-4. Open your browser to `http://localhost:3000`.
+4. Open your browser to [http://localhost:3000](http://localhost:3000) to use the application!
 
 ## 🔒 Security
 - Passwords are securely hashed using bcrypt.
