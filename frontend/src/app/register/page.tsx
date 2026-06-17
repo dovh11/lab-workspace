@@ -15,7 +15,7 @@ const schema = z.object({
   username: z.string().min(3, "Min. 3 characters").regex(/^[a-zA-Z0-9_-]+$/, "Letters, numbers, _ or - only"),
   email: z.string().email("Invalid email"),
   full_name: z.string().min(2, "Name required"),
-  password: z.string().min(8, "Min. 8 characters"),
+  password: z.string().min(8, "Min. 8 characters").max(72, "Max 72 characters"),
   system_role: z.enum(["Manager", "Researcher", "Intern"]),
 });
 type FormData = z.infer<typeof schema>;
@@ -123,6 +123,7 @@ export default function RegisterPage() {
                   type={showPwd ? "text" : "password"}
                   className="w-full px-4 py-2.5 pr-10 text-sm rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   placeholder="Min. 8 characters"
+                  maxLength={72}
                   disabled={loading}
                 />
                 <button
