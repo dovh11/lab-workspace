@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timedelta
 from typing import Optional, Any
 from jose import JWTError, jwt
@@ -8,13 +9,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # bcrypt only supports passwords up to 72 bytes
-    return pwd_context.verify(plain_password[:72], hashed_password)
+    # Hash with SHA256 first to prevent bcrypt's 72 byte limit crash
+    sha256_hash = hashlib.sha256(plain_password.encode('utf-8')).hexdigest()
+    return pwd_context.verify(sha256_hash, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    # bcrypt only supports passwords up to 72 bytes
-    return pwd_context.hash(password[:72])
+    # Hash with SHA256 first to prevent bcrypt's 72 byte limit crash
+    sha256_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    return pwd_context.hash(sha256_hash)
 
 
 def create_access_token(subject: Any, expires_delta: Optional[timedelta] = None) -> str:
